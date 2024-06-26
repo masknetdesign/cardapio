@@ -308,7 +308,7 @@
             }).join("")
 
             const message = encodeURIComponent(cartItems)
-            const phone = "11988896517"
+            const phone = "+5511988896517"
 
             window.open(`https://wa.me/${phone}?text=${message} Endereço: ${addressInput.value}`, "_blank")
 
@@ -332,7 +332,7 @@
         function checkRestaurantOpen(){
             const data = new Date();
             const hora = data.getHours();
-            return hora >= 9 && hora < 22; //true = restaurante esta aberto
+            return hora >= 9 && hora < 18; //true = restaurante esta aberto
         }
 
         const spanItem = document.getElementById("date-span")
