@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
+    integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mercado Santa-Maria" />
+    <meta property="og:image" content="https://cardapio-pi-ten.vercel.app/assets/logo.png" />
+    <meta property="og:description" content="Faça seu Pedido!" />
+    <meta property="og:site_name" content="MercadoSantaMaria" />
+    <link rel="stylesheet" href="./styles/output.css"/>
+    <title>Admin - Mercado Santa Maria</title>
+    <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-firestore.js"></script>
+</head>
+<body>
+
+   <!---HEADER-->
+   <header class="w-full h-[420px] bg-zinc-900 bg-home bg-cover bg-center">
+        <div class="w-full h-full flex flex-col justify-center items-center">
+            <img src="./assets/logo.png" alt="Logo Dev-Burguer" class="w-32 h-32 rounded-full shadow-lg hover:scale-110 duration-200"/>
+            <h1 class="text-4xl mt-4 mb-2 font-bold text-white">MERC STA MARIA</h1>
+            <span class="text-white font-medium">Atibaia-SP</span>
+            <div class="bg-green-500 px-4 py-1 rounded-lg mt-5" id="date-span">
+                <span class="text-white font-medium">Segunda à Sábado - 09:00 às 18h</span>
+            </div>
+        </div>
+   </header>
+   <!---FIM DO HEADER-->
+
+   <h2 class="text-2xl md:text-3xl font-bold text-center mt-9 mb-6">Admin - Adicionar Produto</h2>
+
+   <!---INICIO DO FORMULARIO DE ADICIONAR PRODUTO-->
+   <div class="mx-auto max-w-4xl px-4 mb-16">
+       <form id="add-product-form" class="space-y-4">
+           <div>
+               <label for="product-name" class="block text-sm font-medium text-gray-700">Nome do Produto</label>
+               <input type="text" id="product-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+           </div>
+           <div>
+               <label for="product-description" class="block text-sm font-medium text-gray-700">Descrição do Produto</label>
+               <textarea id="product-description" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
+           </div>
+           <div>
+               <label for="product-price" class="block text-sm font-medium text-gray-700">Preço do Produto</label>
+               <input type="number" step="0.01" id="product-price" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+           </div>
+           <div>
+               <label for="product-image" class="block text-sm font-medium text-gray-700">Imagem do Produto</label>
+               <input type="file" id="product-image" class="mt-1 block w-full text-gray-900">
+           </div>
+           <div class="flex justify-end">
+               <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Adicionar Produto</button>
+           </div>
+       </form>
+   </div>
+   <!---FIM DO FORMULARIO DE ADICIONAR PRODUTO-->
+
+   <script>
+       // Configuração do Firebase
+       const firebaseConfig = {
+        apiKey: "AIzaSyCc13jXAn0iMpA51o3xuSrEpjdkJjXLv2Q",
+        authDomain: "mercado-santa-maria.firebaseapp.com",
+        projectId: "mercado-santa-maria",
+        storageBucket: "mercado-santa-maria.appspot.com",
+        messagingSenderId: "561473746533",
+        appId: "1:561473746533:web:253f4b8be9009aa522b88c"
+       };
+
+       // Inicializar Firebase
+       const app = firebase.initializeApp(firebaseConfig);
+       const storage = firebase.storage();
+       const db = firebase.firestore();
+
+       // Adicionar Produto
+       document.getElementById('add-product-form').addEventListener('submit', async (event) => {
+           event.preventDefault();
+
+           const name = document.getElementById('product-name').value;
+           const description = document.getElementById('product-description').value;
+           const price = parseFloat(document.getElementById('product-price').value);
+           const imageFile = document.getElementById('product-image').files[0];
+
+           if (name && description && price && imageFile) {
+               try {
+                   // Upload da imagem
+                   const storageRef = storage.ref();
+                   const imageRef = storageRef.child(`products/${imageFile.name}`);
+                   await imageRef.put(imageFile);
+                   const imageUrl = await imageRef.getDownloadURL();
+
+                   // Adicionar produto ao Firestore
+                   await db.collection('products').add({
+                       name,
+                       description,
+                       price,
+                       imageUrl
+                   });
+
+                   // Limpar formulário
+                   document.getElementById('add-product-form').reset();
+
+                   // Notificação de sucesso
+                   Toastify({
+                       text: "Produto adicionado com sucesso!",
+                       duration: 3000,
+                       gravity: "top",
+                       position: "right",
+                       backgroundColor: "#4CAF50",
+                   }).showToast();
+               } catch (error) {
+                   console.error("Erro ao adicionar produto: ", error);
+                   // Notificação de erro
+                   Toastify({
+                       text: "Erro ao adicionar produto!",
+                       duration: 3000,
+                       gravity: "top",
+                       position: "right",
+                       backgroundColor: "#F44336",
+                   }).showToast();
+               }
+           } else {
+               // Notificação de erro
+               Toastify({
+                   text: "Por favor, preencha todos os campos!",
+                   duration: 3000,
+                   gravity: "top",
+                   position: "right",
+                   backgroundColor: "#F44336",
+               }).showToast();
+           }
+       });
+   </script>
+
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</body>
+</html>
