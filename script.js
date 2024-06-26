@@ -116,3 +116,78 @@ function removeItemCart(name) {
         updateCartModal();
     }
 }
+
+addressInput.addEventListener("input", function(event){
+    let inputValue = event.target.value;
+
+    if(inputValue !== ""){
+        addressInput.classList.remove("border-red-500")
+        addressWarn.classList.add("hidden")
+    }
+})
+
+// Finalizar Pedido
+cartCheckout.addEventListener("click", function(){
+
+    const isOpen = checkRestaurantOpen();
+    if(!isOpen){
+        
+        Toastify({
+            text: "Ops a loja esta Fechada!",
+            duration: 3000,
+            close: true,
+            gravity: "top", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+              background: "#ef44444",
+            },
+          }).showToast();
+
+
+        return;
+    }
+
+    if(cart.length === 0 ) return;
+    if(addressInput.value === ""){
+        addressWarn.classList.remove("hidden")
+        addressInput.classList.add("border-red-500")
+        return;
+    }
+
+    // Envia o pedido para API whatsapp
+
+    const cartItems = cart.map((item) =>{
+        return (
+            `${item.name} Quantidade: (${item.quantity}) Preço: R$${item.price} | `
+        )
+    }).join("")
+
+    const message = encodeURIComponent(cartItems)
+    const phone = "11988896517"
+
+    window.open(`https://wa.me/${phone}?text=${message} Endereço: ${addressInput.value}`, "_blank")
+
+    cart = [];
+    updateCartModal();
+
+})
+
+// Verificar a hora e manipular o card Horario
+function checkRestaurantOpen(){
+    const data = new Date();
+    const hora = data.getHours();
+    return hora >=18 && hora < 18; //true = restaurante esta aberto
+}
+
+
+const spanItem = document.getElementById("date-span")
+const isOpen = checkRestaurantOpen();
+
+if(isOpen){
+    spanItem.classList.remove("bg-red-500");
+    spanItem.classList.add("bg-green-600")
+}else{
+    spanItem.classList.remove("bg-green-600")
+    spanItem.classList.add("bg-red-500")
+}
