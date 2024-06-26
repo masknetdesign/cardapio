@@ -1,4 +1,4 @@
-const menu = document.getElementById("menu");
+/*const menu = document.getElementById("menu");
 const cartBtn = document.getElementById("cart-btn");
 const cartModal = document.getElementById("cart-modal");
 const cartItemsContainer = document.getElementById("cart-items");
@@ -190,4 +190,4 @@ if(isOpen){
 }else{
     spanItem.classList.remove("bg-green-600")
     spanItem.classList.add("bg-red-500")
-}
+}*/
